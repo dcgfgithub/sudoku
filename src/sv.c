@@ -6,6 +6,7 @@
 #include "sw_dbg.h"
 #include "sw_spr.h"
 #include "sw_gfx.h"
+#include "sw_anm.h"
 #include "sw_msg.h"
 
 #include "sv.h"
@@ -41,6 +42,24 @@ enum
     SV_SPR_COUNT
 };
 
+enum
+{
+    SV_ANM_DELAY = 0,
+    SV_ANM_PEG_FIRST,
+    SV_ANM_PEG_COUNT = 81,
+    SV_ANM_COUNT = SV_ANM_PEG_FIRST + SV_ANM_PEG_COUNT
+};
+
+enum
+{
+    SV_RTA_DELAY = 0,
+    SV_RTA_PEG_FIRST,
+    SV_RTA_PEG_COUNT = 81,
+    SV_RTA_PEG_LABEL_FIRST = SV_RTA_PEG_FIRST + SV_RTA_PEG_COUNT,
+    SV_RTA_PEG_LABEL_COUNT = SV_RTA_PEG_COUNT,
+    SV_RTA_COUNT = SV_RTA_PEG_LABEL_FIRST + SV_RTA_PEG_LABEL_COUNT
+};
+
 static SW_MSG_ID sv_msg_as[] =
 {
     SW_MSG_TOUCH,
@@ -74,6 +93,8 @@ enum
     SV_STATE_CREATE,
     SV_STATE_SUBMIT,
     SV_STATE_SOLVE,
+    SV_STATE_SOLVE_ANIMATED,
+    SV_STATE_SOLVE_COMPLETE,
     SV_STATE_DRAG_PEG,
     
     SV_STATE_COUNT
@@ -93,6 +114,8 @@ static float sv_peg_x;
 static float sv_peg_y;
 
 static SWsprite sv_spr_a[ SV_SPR_COUNT ];
+static SWanim   sv_anm_a[ SV_ANM_COUNT ];
+static SWrtanim sv_rta_a[ SV_RTA_COUNT ] = {0};
 
 static float    sv_hit_a[SV_HIT_COUNT][4] = {0};
 
@@ -358,9 +381,48 @@ static void sv_Evaluate( void )
     }
 }
 
+static void sv_AnimatePeg( int peg, int delay )
+{
+    SWanim a;
+    
+    a = sv_anm_a[SV_ANM_PEG_FIRST+peg];
+    
+    swAnmClear      ( a );
+    swAnmKeyframe   ( a, delay );
+    swAnmKeyframe   ( a, 30 );
+    swAnmEase       ( a, SW_ANM_EASE_ELASTIC );
+    swAnmScaleTo    ( a, 1.0, 1.0 );
+    
+    swSprSetScale( sv_spr_a[SV_SPR_PEG_FIRST      +peg], 0.1, 0.1 );
+    swSprSetScale( sv_spr_a[SV_SPR_PEG_LABEL_FIRST+peg], 0.1, 0.1 );
+    
+    sv_rta_a[SV_RTA_PEG_FIRST      +peg] = swAnmStart( a, sv_spr_a[SV_SPR_PEG_FIRST      +peg] );
+    sv_rta_a[SV_RTA_PEG_LABEL_FIRST+peg] = swAnmStart( a, sv_spr_a[SV_SPR_PEG_LABEL_FIRST+peg] );
+}
+
+static void sv_AnimateDelayComplete( int opaque )
+{
+    sv_state = SV_STATE_SOLVE_COMPLETE;
+}
+
+static void sv_AnimateDelay( int delay )
+{
+    SWanim a;
+    
+    a = sv_anm_a[SV_ANM_DELAY];
+    
+    swAnmClear      ( a );
+    swAnmCallback   ( a, sv_AnimateDelayComplete, 0 );
+    swAnmKeyframe   ( a, delay );
+    
+    sv_rta_a[SV_RTA_DELAY] = swAnmStart( a, sv_spr_a[SV_SPR_PEG_FIRST] );
+}
+
 static void sv_Solve( void )
 {
     SUDOKU_S solution = {0};
+    
+    int delay = 0;
     
     int result = solverSolve( &sv_sudoku_s, &solution );
     if( result )
@@ -377,9 +439,14 @@ static void sv_Solve( void )
                     swSprSetImage( sv_spr_a[SV_SPR_PEG_LABEL_FIRST+peg], tex_main_images[sv_peg_lbl_r_a[val]] );
                     swSprShow    ( sv_spr_a[SV_SPR_PEG_LABEL_FIRST+peg], 1 );
                     swSprShow    ( sv_spr_a[SV_SPR_PEG_FIRST+peg], 1 );
+                    
+                    sv_AnimatePeg( peg, delay );
+                    delay += 1;
                 }
             }
         }
+        sv_AnimateDelay( delay+30 );
+        sv_state = SV_STATE_SOLVE_ANIMATED;
     }
 }
 
@@ -457,6 +524,13 @@ static int sv_Touch( float x, float y )
             }
             break;
             
+        case SV_STATE_SOLVE_COMPLETE:
+            if( swIsTouchingv(x, y, sv_hit_a[SV_HIT_BACK]) )
+            {
+                swSprSetOffs( sv_spr_a[SV_SPR_BTN_BACK], 5, -5 );
+            }
+            break;
+            
         default:
             return 0;
     }
@@ -505,6 +579,15 @@ static int sv_TouchUp( float x, float y )
             {
                 swSprSetOffs( sv_spr_a[ SV_SPR_BTN_SOLVE ], 0, 0 );
                 sv_Solve();
+            }
+            break;
+            
+        case SV_STATE_SOLVE_COMPLETE:
+            if( swIsTouchingv(x, y, sv_hit_a[SV_HIT_BACK]) )
+            {
+                swSprSetOffs( sv_spr_a[SV_SPR_BTN_BACK], 0, 0 );
+                swAnmStopv( SV_RTA_COUNT, sv_rta_a );
+                sv_Scene_Main();
             }
             break;
             
@@ -571,6 +654,8 @@ void sv_Start()
     tex_main_LoadImages();
     
     swSprGen( SV_SPR_COUNT, sv_spr_a );
+    swAnmGen( SV_ANM_COUNT, sv_anm_a );
+    
     sv_Reset();
     sv_Scene_Main();
     
@@ -581,6 +666,7 @@ void sv_Stop()
 {
     swMsgDetach( sv_msg_as, sv_MsgHandler );
     
+    swAnmDel( SV_ANM_COUNT, sv_anm_a );
     swSprDel( SV_SPR_COUNT, sv_spr_a );
     
     tex_main_UnloadImages();
