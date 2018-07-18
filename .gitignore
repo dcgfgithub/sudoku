@@ -1,0 +1,13 @@
+.DS_Store
+ios/cpwa.xcodeproj/project.xcworkspace/xcuserdata/
+ios/cpwa.xcodeproj/xcuserdata/
+xcuserdata/
+bin/
+gen/
+libs/
+obj/
+build.xml
+lint.xml
+local.properties
+proguad-project.txt
+

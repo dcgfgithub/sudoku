@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+environment/project/com.android.toolchain.gcc.1482455181/PATH/delimiter=\:
+environment/project/com.android.toolchain.gcc.1482455181/PATH/operation=replace
+environment/project/com.android.toolchain.gcc.1482455181/PATH/value=/usr/bin\:/bin\:/usr/sbin\:/sbin\:/Users/Homer/Documents/library/ndk
+environment/project/com.android.toolchain.gcc.1482455181/append=true
+environment/project/com.android.toolchain.gcc.1482455181/appendContributed=true
