@@ -2,11 +2,9 @@
 */
 #include <jni.h>
 #include <android/log.h>
-#include <stdlib.h>
+#include <string.h>
 
 #include "app_jni.h"
-#include "and_cam.h"
-#include "and_snd.h"
 
 #include "sw_app.h"
 #include "sw_dbg.h"

@@ -274,8 +274,6 @@ const SUDOKU_S * sudokuGenerateRandomBoard( unsigned int n ) {
 
 void sudokuClear( SUDOKU_S * psudoku )
 {
-    SW_ASSERT( psudoku );
-    
     psudoku->n = 0;
     for( int row=0; row<16; row++ )
     for( int col=0; col<16; col++ )

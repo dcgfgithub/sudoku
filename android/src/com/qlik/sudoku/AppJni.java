@@ -3,28 +3,18 @@
 
 package com.qlik.sudoku;
 
-import android.provider.MediaStore;
-import android.util.Log;
-
-import android.net.Uri;
-
-import android.graphics.Bitmap;
-
 import android.content.Context;
-import android.content.Intent;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class AppJni 
-{		
-	private static final String TAG = "AppJni";
-		
+public class AppJni
+{
 	private static AppActivity  m_Activity = null;
 	private static AppView      m_View;
 	private static Context    	m_Context;
 	private static GL10       	m_GL10;
         
-    private static CpwaTexture  m_Texture;
+    private static AppTexture  m_Texture;
         	
 	public static native void nativeInit( int width, int height);
 	public static native void nativeStart();

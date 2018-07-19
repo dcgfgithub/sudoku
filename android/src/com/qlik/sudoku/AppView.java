@@ -12,14 +12,14 @@ import android.opengl.GLSurfaceView;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-class AppView extends GLSurfaceView 
+class AppView extends GLSurfaceView
 {
-    private Context 		m_context;
-    private AppActivity	    m_activity;
-    private AppRenderer 	m_renderer;    
-    private AppView         m_view;    
+    private Context 	m_context;
+    private AppActivity	m_activity;
+    private AppRenderer m_renderer;
+    private AppView     m_view;
 
-    public AppView(AppActivity activity, Context context) 
+    public AppView(AppActivity activity, Context context)
     {
         super(context);
         m_context  = context;
@@ -161,7 +161,7 @@ class AppView extends GLSurfaceView
         {                    	
         	Log.d(TAG, "onSurfaceChanged");
         	
-        	AppJni.init( m_activity, m_view, m_context, gl, width, height );	
+        	AppJni.init( m_activity, m_view, m_context, gl, width, height );
         	m_initialized = true;
         	m_height      = height;
         }
@@ -182,7 +182,7 @@ class AppView extends GLSurfaceView
         {        	
         	if( m_initialized )
         	{
-        		AppJni.onPause();
+				AppJni.onPause();
         		m_paused = true;
         	}
         }
@@ -191,7 +191,7 @@ class AppView extends GLSurfaceView
         {        	
         	if( m_paused )
         	{
-        		AppJni.onResume();
+				AppJni.onResume();
         		m_paused = false;
         	}
         }
@@ -200,7 +200,7 @@ class AppView extends GLSurfaceView
         {        	
         	if( m_initialized )
         	{
-        		AppJni.onStop();
+				AppJni.onStop();
         		m_paused = false;
         				/*
         				 * If the application is stopped, we no longer want to call the JNI resume
@@ -213,25 +213,25 @@ class AppView extends GLSurfaceView
         public void onTouch( float x, float y )
         {
         	if( m_initialized )
-        		AppJni.nativeTouch(x, m_height-y);
+				AppJni.nativeTouch(x, m_height-y);
         }
         
         public void onTouchUp( float x, float y )
         {
         	if( m_initialized )
-        		AppJni.nativeTouchUp(x, m_height-y);
+				AppJni.nativeTouchUp(x, m_height-y);
         }        
         
         public void onTouchMove( float x, float y )
         {
         	if( m_initialized )
-        		AppJni.nativeTouchMove(x, m_height-y);
+				AppJni.nativeTouchMove(x, m_height-y);
         }        
         
         public void onKeyBack()
         {
         	if( m_initialized )
-        		AppJni.nativeKeyBack();
+				AppJni.nativeKeyBack();
         }
     }    
 }

@@ -17,7 +17,7 @@ import java.io.IOException;
 import javax.microedition.khronos.opengles.GL10;
 
 
-public class AppTexture 
+public class AppTexture
 {
 	private static final String TAG = "AppTexture";
 	
@@ -27,7 +27,7 @@ public class AppTexture
     private static int        	m_TextureWidth;
     private static int     	  	m_TextureHeight;
     	
-	public CpwaTexture( Context context, GL10 gl )
+	public AppTexture( Context context, GL10 gl )
 	{
 		m_Context = context;
 		m_GL10    = gl;
